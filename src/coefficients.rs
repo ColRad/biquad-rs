@@ -56,6 +56,9 @@ pub enum Type {
     HighPass,
     BandPass,
     Notch,
+    Peak,
+    LowShelf,
+    HighShelf,
 }
 
 /// Holder of the biquad coefficients, utilizes normalized form
@@ -80,6 +83,7 @@ impl Coefficients<f32> {
         fs: Hertz<f32>,
         f0: Hertz<f32>,
         q_value: f32,
+        gain: f32,
     ) -> Result<Coefficients<f32>, Errors> {
         if 2.0 * f0.hz() > fs.hz() {
             return Err(Errors::OutsideNyquist);
@@ -90,7 +94,6 @@ impl Coefficients<f32> {
         }
 
         let omega = 2.0 * core::f32::consts::PI * f0.hz() / fs.hz();
-
         match filter {
             Type::SinglePoleLowPass => {
                 let alpha = omega / (omega + 1.0);
@@ -188,6 +191,69 @@ impl Coefficients<f32> {
                     b2: b2 / a0,
                 })
             }
+            Type::Peak => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let alpha = omega_s / (2.0 * q_value);
+                let gain_abs = 10.0f32.powf(gain / 40.);
+
+                let b0 = 1.0 + (alpha * gain_abs);
+                let b1 = -2.0 * omega_c;
+                let b2 = 1.0 - (alpha * gain_abs);
+                let a0 = 1.0 + (alpha / gain_abs);
+                let a1 = -2.0 * omega_c;
+                let a2 = 1.0 - (alpha / gain_abs);
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
+                })
+            }
+            Type::LowShelf => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let gain_abs = 10.0f32.powf(gain / 40.);
+                let beta = (gain_abs + gain_abs).powf(0.5);
+
+                let b0 = gain_abs * ((gain_abs + 1.) - (gain_abs - 1.) * omega_c + beta * omega_s);
+                let b1 = 2. * gain_abs * ((gain_abs - 1.) - (gain_abs + 1.) * omega_c);
+                let b2 = gain_abs * ((gain_abs + 1.) - (gain_abs - 1.) * omega_c - beta * omega_s);
+                let a0 = (gain_abs + 1.) + (gain_abs - 1.) * omega_c + beta * omega_s;
+                let a1 = -2. * ((gain_abs - 1.) + (gain_abs + 1.) * omega_c);
+                let a2 = (gain_abs + 1.) + (gain_abs - 1.) * omega_c - beta * omega_s;
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
+                })
+            }
+            Type::HighShelf => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let gain_abs = 10.0f32.powf(gain / 40.);
+                let beta = (gain_abs + gain_abs).powf(0.5);
+
+                let b0 = gain_abs * ((gain_abs + 1.) + (gain_abs - 1.) * omega_c + beta * omega_s);
+                let b1 = -2. * gain_abs * ((gain_abs - 1.) + (gain_abs + 1.) * omega_c);
+                let b2 = gain_abs * ((gain_abs + 1.) + (gain_abs - 1.) * omega_c - beta * omega_s);
+                let a0 = (gain_abs + 1.) - (gain_abs - 1.) * omega_c + beta * omega_s;
+                let a1 = 2. * ((gain_abs - 1.) - (gain_abs + 1.) * omega_c);
+                let a2 = (gain_abs + 1.) - (gain_abs - 1.) * omega_c - beta * omega_s;
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
+                })
+            }
         }
     }
 }
@@ -201,6 +267,7 @@ impl Coefficients<f64> {
         fs: Hertz<f64>,
         f0: Hertz<f64>,
         q_value: f64,
+        gain: f64,
     ) -> Result<Coefficients<f64>, Errors> {
         if 2.0 * f0.hz() > fs.hz() {
             return Err(Errors::OutsideNyquist);
@@ -313,6 +380,69 @@ impl Coefficients<f64> {
                     b0: b0 * div,
                     b1: b1 * div,
                     b2: b2 * div,
+                })
+            }
+            Type::Peak => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let alpha = omega_s / (2.0 * q_value);
+                let gain_abs = 10.0f64.powf(gain / 40.);
+
+                let b0 = 1.0 + (alpha * gain_abs);
+                let b1 = -2.0 * omega_c;
+                let b2 = 1.0 - (alpha * gain_abs);
+                let a0 = 1.0 + (alpha / gain_abs);
+                let a1 = -2.0 * omega_c;
+                let a2 = 1.0 - (alpha / gain_abs);
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
+                })
+            }
+            Type::LowShelf => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let gain_abs = 10.0f64.powf(gain / 40.);
+                let beta = (gain_abs + gain_abs).powf(0.5);
+
+                let b0 = gain_abs * ((gain_abs + 1.) - (gain_abs - 1.) * omega_c + beta * omega_s);
+                let b1 = 2. * gain_abs * ((gain_abs - 1.) - (gain_abs + 1.) * omega_c);
+                let b2 = gain_abs * ((gain_abs + 1.) - (gain_abs - 1.) * omega_c - beta * omega_s);
+                let a0 = (gain_abs + 1.) + (gain_abs - 1.) * omega_c + beta * omega_s;
+                let a1 = -2. * ((gain_abs - 1.) + (gain_abs + 1.) * omega_c);
+                let a2 = (gain_abs + 1.) + (gain_abs - 1.) * omega_c - beta * omega_s;
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
+                })
+            }
+            Type::HighShelf => {
+                let omega_s = omega.sin();
+                let omega_c = omega.cos();
+                let gain_abs = 10.0f64.powf(gain / 40.);
+                let beta = (gain_abs + gain_abs).powf(0.5);
+
+                let b0 = gain_abs * ((gain_abs + 1.) + (gain_abs - 1.) * omega_c + beta * omega_s);
+                let b1 = -2. * gain_abs * ((gain_abs - 1.) + (gain_abs + 1.) * omega_c);
+                let b2 = gain_abs * ((gain_abs + 1.) + (gain_abs - 1.) * omega_c - beta * omega_s);
+                let a0 = (gain_abs + 1.) - (gain_abs - 1.) * omega_c + beta * omega_s;
+                let a1 = 2. * ((gain_abs - 1.) - (gain_abs + 1.) * omega_c);
+                let a2 = (gain_abs + 1.) - (gain_abs - 1.) * omega_c - beta * omega_s;
+
+                Ok(Coefficients {
+                    a1: a1 / a0,
+                    a2: a2 / a0,
+                    b0: b0 / a0,
+                    b1: b1 / a0,
+                    b2: b2 / a0,
                 })
             }
         }

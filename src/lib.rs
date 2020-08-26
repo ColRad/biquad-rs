@@ -278,7 +278,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F32);
+        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F32, 0.);
 
         match coeffs {
             Ok(_) => {}
@@ -293,7 +293,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F64);
+        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F64, 0.);
 
         match coeffs {
             Ok(_) => {}
@@ -308,7 +308,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, f0, fs, Q_BUTTERWORTH_F32);
+        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, f0, fs, Q_BUTTERWORTH_F32, 0.);
 
         match coeffs {
             Ok(_) => {
@@ -325,7 +325,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, f0, fs, Q_BUTTERWORTH_F64);
+        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, f0, fs, Q_BUTTERWORTH_F64, 0.);
 
         match coeffs {
             Ok(_) => {
@@ -342,7 +342,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, fs, f0, -1.0);
+        let coeffs = Coefficients::<f32>::from_params(Type::LowPass, fs, f0, -1.0, 0.);
 
         match coeffs {
             Ok(_) => {
@@ -359,7 +359,7 @@ mod tests {
         let f0 = 10.hz();
         let fs = 1.khz();
 
-        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, fs, f0, -1.0);
+        let coeffs = Coefficients::<f64>::from_params(Type::LowPass, fs, f0, -1.0, 0.);
 
         match coeffs {
             Ok(_) => {
@@ -380,7 +380,7 @@ mod tests {
         let fs = 1.khz();
 
         let coeffs =
-            Coefficients::<f32>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F32).unwrap();
+            Coefficients::<f32>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F32, 0.).unwrap();
 
         let mut biquad1 = DirectForm1::<f32>::new(coeffs);
         let mut biquad2 = DirectForm2Transposed::<f32>::new(coeffs);
@@ -404,7 +404,7 @@ mod tests {
         let fs = 1.khz();
 
         let coeffs =
-            Coefficients::<f64>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F64).unwrap();
+            Coefficients::<f64>::from_params(Type::LowPass, fs, f0, Q_BUTTERWORTH_F64, 0.).unwrap();
 
         let mut biquad1 = DirectForm1::<f64>::new(coeffs);
         let mut biquad2 = DirectForm2Transposed::<f64>::new(coeffs);
